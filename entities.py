@@ -7,6 +7,7 @@ class Staff:
 		self.id = staff_id
 		#implement department?
 		self.loyalty = loyalty
+		self.fired = False
 		if loyalty is None:
 			self.loyalty = 50 + random.randint(0,50)
 
@@ -37,13 +38,14 @@ class Infos:
 		self.info_id = info_id
 		self.summary = summary
 		self.details = details
+		self.published = False
 
 
 class StaffList:
 	def __init__(self, howmany=30):
 		self.staff_list = []
 
-		for staff_id in xrange(howmany):
+		for staff_id in xrange(1, howmany+1):
 			namestr = "staff member " + str(staff_id)
 			titlestr = "job title " + str(staff_id)
 			self.staff_list.append(Staff(namestr, titlestr, staff_id))
@@ -52,9 +54,19 @@ class StaffList:
 		if len(self.staff_list) == 0:
 			return
 		for staff in self.staff_list:
-			print("%s - %s - ID:%d - %d/100" % \
-				(staff.name, staff.title,\
-				staff.id, staff.loyalty))
+			if not staff.fired:
+				print("%s - %s - ID:%d - %d/100" % \
+					(staff.name, staff.title,\
+					staff.id, staff.loyalty))
+
+	def fire(self, sid):
+		exists = False
+		for staff in self.staff_list:
+			if staff.id == sid:
+				staff.fired = True
+				exists = True
+				print("Fired %s" % staff.name)
+
 
 class Leak:
 	# Gonna need to think about this...
