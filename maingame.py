@@ -1,16 +1,20 @@
-import sys, time, random
+import sys, time
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from entities import StaffList, Director, President, Leak
 
+# TODO - Implement salary?
+# TODO - Implement spying
+
+
 class Game:
 	def __init__(self, namestr):
-		self.start_time = str(datetime.now())
+		self.start_time = datetime.now()
 
 		# Entities
 		self.director = Director(namestr)
-		self.staff_list = StaffList()
+		self.staff_list = StaffList(20)
 		self.president = President()
 
 		self.action_list = [
@@ -23,7 +27,7 @@ class Game:
 		self.total_leaks = 0
 		self.fired_staffs = 0
 		self.day = 1
-		self.todays_leaks = []
+		self.todays_leak = None
 
 	def view_status(self):
 		pass
@@ -40,11 +44,16 @@ class Game:
 		self.process_leaks()
 
 	def process_leaks(self):
-		if len(self.todays_leaks) < 1:
+		if self.todays_leak:
+			print("Oh no!")
+			news_date = self.start_time + timedelta(days = self.todays_leak.info.info_id)
+			make_news(self.todays_leak, str(news_date))
+			self.director.decrease_respect(self.todays_leak.severity * 10)
+		else:
 			print("Another peaceful day without a leak. Well done, Director.")
 			self.director.increase_respect(5)
 
-		self.todays_leaks = []
+		self.todays_leak = None
 
 	def process_president(self):
 		print("\n\nPresident is thinking....\n")
@@ -73,13 +82,17 @@ class Game:
 
 		#leak here
 		for staff in self.staff_list.staff_list:
-			leak = staff.leak()
-			if leak is not None:
-				self.todays_leaks.append(leak)
+			info = staff.leak()
+			if info is not None:
+				#break, clear leak from the rest of the staffs
+				leak = Leak(info, staff.id)
+				self.todays_leak = leak
+				self.staff_list.clear_leaked_info(leak.info.info_id)
+				self.total_leaks += 1
 		self.day += 1
 
 	def playgame(self):
-		print("Let's do it")
+		print("Let's do this\n\n")
 		while self.director.respect>0:
 			# Start of the day. Display Messages Of The Day
 			self.motd()
@@ -87,15 +100,39 @@ class Game:
 
 			# Display a list of available actions
 			self.print_actions()
-			action = int(raw_input())#Check Input
-			while action != 4:
+			action = get_int_input(max=len(self.action_list)+1)
+			while action != len(self.action_list)+1:
 				self.action_list[action-1]()
+				time.sleep(1)
 				self.print_actions()
-				action = int(raw_input())#Check Input
+				action = get_int_input(max=len(self.action_list)+1)
 			self.pass_day()
 
 		print("You moron! You are fired!")
 
+def make_news(leak, date):
+	main_bit = leak.info.summary
+	headline = "Report: President " + main_bit + "."
+	print("="*(len(headline)+10))
+	print("|    "+headline+"    |")
+	print("="*(len(headline)+10))
+	print(date)
+
+def get_int_input(max):
+	ok = False
+	while not ok:
+		try:
+			action = int(raw_input("What to do? :  "))#Check Input
+			if action>0 and action<=max:
+				return action
+			else:
+				print("Only enter a valid option number")
+		except ValueError:
+			print("Only enter a valid option number")
+			pass
+		# except:
+		# 	print("Only enter a valid option number")
+		# 	print("Unknown exception!!")
 
 if __name__ == '__main__':
 	py3 = sys.version_info[0] > 2
