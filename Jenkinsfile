@@ -1,6 +1,10 @@
 pipeline {
-    agent any
-
+    agent {
+        node {
+            customWorkspace '${WORKSPACE}/${BUILD_NUMBER}'
+        }
+    }
+    
     stages {
         stage('Hello') {
             steps {
