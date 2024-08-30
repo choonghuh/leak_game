@@ -1,7 +1,8 @@
 pipeline {
     agent {
         node {
-            customWorkspace '${WORKSPACE}/${BUILD_NUMBER}'
+            label ''
+            customWorkspace "workspace/pipe1/${BUILD_NUMBER}"
         }
     }
     
@@ -12,6 +13,10 @@ pipeline {
                 echo 'More change, trying to trigger a jenkins build'
             }
         }
-
+        stage('Git Checkout') {
+            steps {
+                git 'https://github.com/choonghuh/leak_game'
+            }
+        }
     }
 }
